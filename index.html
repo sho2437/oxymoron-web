@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oxymoron｜まだ名前のない物語が立ち上がる、ともにある。</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16161d;
+    --ink-soft:#2a2a33;
+    --cream:#f7f4ee;
+    --cream-2:#efe9df;
+    --paper:#fdfcfa;
+    --accent:#b5613f;       /* terracotta */
+    --accent-deep:#8f4226;
+    --line:rgba(0,0,0,.10);
+    --muted:#6b6b73;
+    --serif:'Shippori Mincho', serif;
+    --sans:'Noto Sans JP', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:var(--paper);
+    line-height:1.95;
+    font-weight:400;
+    letter-spacing:.02em;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* スクロール進捗バー */
+  #progress{
+    position:fixed;top:0;left:0;height:3px;width:0%;
+    background:linear-gradient(90deg,var(--accent),var(--accent-deep));
+    z-index:1000;transition:width .1s linear;
+  }
+
+  /* ナビ */
+  nav{
+    position:fixed;top:0;left:0;width:100%;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px 6vw;z-index:900;
+    backdrop-filter:blur(8px);
+    background:rgba(253,252,250,0);
+    transition:background .4s ease, box-shadow .4s ease, padding .4s ease;
+  }
+  nav.scrolled{background:rgba(253,252,250,.85);box-shadow:0 1px 0 var(--line);padding:12px 6vw}
+  nav .brand{font-family:var(--serif);font-weight:600;font-size:1.05rem;letter-spacing:.12em;color:var(--ink);text-decoration:none}
+  nav .links{display:flex;gap:26px}
+  nav .links a{font-size:.78rem;letter-spacing:.14em;color:var(--muted);text-decoration:none;transition:color .25s}
+  nav .links a:hover{color:var(--accent)}
+  @media(max-width:760px){nav .links{display:none}}
+
+  /* セクション共通 */
+  section{padding:clamp(80px,12vh,150px) 6vw;position:relative}
+  .wrap{max-width:920px;margin:0 auto}
+  .eyebrow{
+    font-family:var(--sans);font-size:.72rem;letter-spacing:.4em;
+    text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:22px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .eyebrow::before{content:"";width:34px;height:1px;background:var(--accent)}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.45;letter-spacing:.03em;margin-bottom:30px}
+  h3{font-family:var(--serif);font-weight:500;font-size:clamp(1.15rem,2.4vw,1.45rem);letter-spacing:.04em;margin-bottom:12px;color:var(--ink)}
+  p{font-size:clamp(.95rem,1.6vw,1.04rem);color:var(--ink-soft)}
+  p+p{margin-top:18px}
+
+  /* HERO */
+  #hero{
+    min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+    background:radial-gradient(120% 120% at 70% 10%, #20202b 0%, var(--ink) 55%, #0e0e14 100%);
+    color:var(--cream);padding:6vw;overflow:hidden;
+  }
+  #hero .hero-inner{max-width:1000px;margin:0 auto;width:100%}
+  #hero .kicker{font-size:.74rem;letter-spacing:.5em;color:var(--accent);text-transform:uppercase;margin-bottom:34px}
+  #hero h1{
+    font-family:var(--serif);font-weight:600;
+    font-size:clamp(2.1rem,6.5vw,4.6rem);line-height:1.5;letter-spacing:.04em;
+    color:#fbf8f2;
+  }
+  #hero h1 .em{color:var(--accent);font-style:normal}
+  #hero .sub{margin-top:38px;font-size:clamp(.9rem,1.8vw,1.1rem);color:rgba(247,244,238,.72);max-width:620px;line-height:2}
+  .scroll-cue{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(247,244,238,.5);font-size:.66rem;letter-spacing:.3em}
+  .scroll-cue .dot{width:1px;height:46px;background:linear-gradient(rgba(247,244,238,.5),transparent);animation:cue 2s infinite}
+  @keyframes cue{0%{transform:scaleY(.3);transform-origin:top;opacity:.3}50%{transform:scaleY(1);opacity:1}100%{transform:scaleY(.3);transform-origin:bottom;opacity:.3}}
+
+  /* 背景の濃淡切替 */
+  .dark{background:var(--ink);color:var(--cream)}
+  .dark h2{color:#fbf8f2}
+  .dark h3{color:#fbf8f2}
+  .dark p{color:rgba(247,244,238,.78)}
+  .dark .eyebrow{color:#d98a66}.dark .eyebrow::before{background:#d98a66}
+  .cream{background:var(--cream)}
+
+  /* カード/グリッド */
+  .grid{display:grid;gap:26px;margin-top:42px}
+  .grid.two{grid-template-columns:repeat(2,1fr)}
+  .grid.three{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:760px){.grid.two,.grid.three{grid-template-columns:1fr}}
+  .card{
+    background:var(--paper);border:1px solid var(--line);border-radius:14px;
+    padding:30px 28px;transition:transform .5s cubic-bezier(.2,.7,.2,1), box-shadow .5s;
+  }
+  .dark .card{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
+  .card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,.10)}
+  .card .num{font-family:var(--serif);font-size:1.7rem;color:var(--accent);font-weight:600;display:block;margin-bottom:10px}
+  .card p{font-size:.92rem;line-height:1.85}
+  /* 場カード */
+  .ba-label{display:block;font-family:var(--serif);font-size:.8rem;letter-spacing:.18em;color:var(--accent);margin-bottom:6px}
+  .ai-note{margin-top:16px;padding-top:13px;border-top:1px solid var(--line);font-size:.82rem;line-height:1.8;color:var(--muted)}
+  .ai-note b{color:var(--accent);font-weight:700;font-size:.72rem;letter-spacing:.1em;margin-right:8px}
+  .dark .ai-note{border-color:rgba(255,255,255,.14);color:rgba(247,244,238,.62)}
+  .dark .ai-note b{color:#d98a66}
+
+  /* ステップ（プロセス） */
+  .steps{margin-top:44px;border-left:2px solid var(--line);padding-left:34px;display:flex;flex-direction:column;gap:36px}
+  .dark .steps{border-color:rgba(255,255,255,.18)}
+  .step{position:relative}
+  .step::before{content:"";position:absolute;left:-43px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px var(--paper)}
+  .dark .step::before{box-shadow:0 0 0 5px var(--ink)}
+  .step h3{margin-bottom:8px}
+
+  /* リード強調 */
+  .lead{font-size:clamp(1.05rem,2vw,1.25rem);line-height:2.1;color:var(--ink)}
+  .dark .lead{color:#f3eee5}
+  blockquote{
+    font-family:var(--serif);font-size:clamp(1.1rem,2.4vw,1.5rem);line-height:1.85;
+    border-left:3px solid var(--accent);padding:6px 0 6px 26px;margin:40px 0;color:var(--ink);letter-spacing:.04em;
+  }
+  .dark blockquote{color:#fbf8f2}
+
+  /* メトリクス */
+  .metrics{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
+  .metric{border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:9px 20px;font-size:.82rem;letter-spacing:.05em;color:rgba(247,244,238,.85)}
+  .metric b{color:var(--accent);font-weight:700;margin-left:6px}
+
+  /* 代表メッセージ */
+  #message .signature{margin-top:36px;font-family:var(--serif);text-align:right;font-size:1.05rem;letter-spacing:.1em}
+  #message .signature small{display:block;font-size:.72rem;letter-spacing:.3em;color:rgba(247,244,238,.55);margin-bottom:6px;font-family:var(--sans)}
+
+  /* フッター */
+  footer{background:#0e0e14;color:rgba(247,244,238,.55);text-align:center;padding:60px 6vw;font-size:.78rem;letter-spacing:.1em}
+  footer .f-brand{font-family:var(--serif);font-size:1.3rem;color:#fbf8f2;letter-spacing:.18em;margin-bottom:14px}
+
+  /* ===== スクロールアニメーション (B) ===== */
+  .reveal{opacity:0;transform:translateY(38px);transition:opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)}
+  .reveal.visible{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.10s}.reveal.d2{transition-delay:.20s}.reveal.d3{transition-delay:.30s}.reveal.d4{transition-delay:.40s}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav id="nav">
+  <a href="#hero" class="brand">OXYMORON</a>
+  <div class="links">
+    <a href="#philosophy">Philosophy</a>
+    <a href="#approach">Approach</a>
+    <a href="#ba">Architecture</a>
+    <a href="#process">Process</a>
+    <a href="#business">Business</a>
+    <a href="#strength">Strength</a>
+    <a href="#message">Message</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header id="hero">
+  <div class="hero-inner">
+    <div class="kicker reveal">Process Consultation Studio</div>
+    <h1 class="reveal d1">まだ名前のない物語が<br><span class="em">立ち上がる</span>、ともにある。</h1>
+    <p class="sub reveal d2">成果と育成、効率と創造、統制と自律——。割り切れないパラドックスを、解消すべき問題ではなく「新しい物語が生まれる源泉」として扱う。人とAIをパートナーに、創発の場を設計し、変容に伴走する会社です。</p>
+  </div>
+  <div class="scroll-cue"><span>SCROLL</span><span class="dot"></span></div>
+</header>
+
+<!-- PHILOSOPHY -->
+<section id="philosophy" class="cream">
+  <div class="wrap">
+    <div class="eyebrow reveal">Philosophy</div>
+    <h2 class="reveal d1">パラドックスを、創造の入り口に変える。</h2>
+    <p class="lead reveal d2">変化の激しい時代、組織のなかは相反する要求であふれています。その狭間で、決まったことを回すだけで精一杯になり、新しい知や物語が生まれにくくなってはいないでしょうか。Oxymoronは、パラドックスを、まだ名前のない物語が立ち上がる「源泉」だと考えます。</p>
+
+    <div class="grid three">
+      <div class="card reveal d1"><h3>Purpose｜パラドックスを、創造の入り口に変える</h3><p>変化が激しいほど、組織は相反する力に押しつぶされ、新しいものを生む力を失っていきます。けれどパラドックスは、割り切れないからこそ、まだ名前のない物語が立ち上がる入り口になる。人と組織が、そこから創り続けられるように——それが、私たちの存在する理由です。</p></div>
+      <div class="card reveal d2"><h3>Vision｜自分の物語として参加し、新しい物語が生まれ続ける世界へ</h3><p>目指すのは、一人ひとりが「自分の物語」として参加できる組織・社会。相反する力を抱えたまま、そのあいだから新しい物語を生み続けられる。割り切らない生き方・働き方が、当たり前になる世界へ。</p></div>
+      <div class="card reveal d3"><h3>Mission｜創発の場を設計し、変容に伴走する</h3><p>現場のビジネス課題を深く理解した上で、知が生まれ循環する「場」を設計する。人とAIをパートナーに、理論とデータに裏打ちされた問いで変容に伴走し、組織が自分で場を回せる状態まで、共に歩みます。</p></div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:64px">Value｜私たちが場に立つときの構え</h3>
+    <div class="grid two">
+      <div class="card reveal d1"><span class="num">①</span><h3>Being｜不完全さを引き受ける</h3><p>答えを持つ専門家でなく、同じパラドックスを抱える人間として場に立つ。</p></div>
+      <div class="card reveal d2"><span class="num">②</span><h3>Viewing｜プロセスを感じ取る</h3><p>結論でなく、その場の関係性・感情・力学を一段降りて観る。</p></div>
+      <div class="card reveal d1"><span class="num">③</span><h3>Doing｜問いを差し出す</h3><p>答えを渡さず、相手が自分で見つめ直せる問いを隣に置く。</p></div>
+      <div class="card reveal d2"><span class="num">④</span><h3>ともにある</h3><p>Being・Viewing・Doingが、相手と私たちのあいだで同時に起きている状態。</p></div>
+    </div>
+
+    <blockquote class="reveal">「Oxymoron」とは、「永遠の一瞬」「明るい闇」のように、相反する二つの言葉を組み合わせる表現方法。相反するもののあいだから新しい意味が立ち上がる——その現象そのものを、社名に込めました。</blockquote>
+  </div>
+</section>
+
+<!-- APPROACH -->
+<section id="approach" class="dark">
+  <div class="wrap">
+    <div class="eyebrow reveal">Approach</div>
+    <h2 class="reveal d1">適応課題を、紐解く。</h2>
+    <p class="lead reveal d2">組織の難題の多くは、知識やスキルを足せば解ける「技術的問題」ではなく、人の信念や関係性が変わらないと解けない「適応課題」です。Oxymoronは答えを配るのではなく、当事者自身の前提が問い直され、新しい知や物語が立ち上がる場を設計します。はじまりは、たいてい一人のマネージャーから。</p>
+    <div class="grid two">
+      <div class="card reveal d1"><h3>場のアーキテクチャ</h3><p>集団向けアプローチ。問い・関係性・循環を設計し、人とAIをパートナーに、チームの「場」そのものを編む。メンバーの声が交わり、相反する力を抱えたまま新しい知が立ち上がる器をつくる。</p></div>
+      <div class="card reveal d2"><h3>マネジメント観の問い直し</h3><p>個人向けアプローチ。マネージャーが無意識に握る「こうあるべき」に、1on1や対話を通じて光を当てる。前提がほどけると、統制だけに頼らない自分らしい関わり方が見えてくる。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- BA ARCHITECTURE -->
+<section id="ba" class="cream" style="background:var(--cream-2)">
+  <div class="wrap">
+    <div class="eyebrow reveal">Ba Architecture</div>
+    <h2 class="reveal d1">場には、4つの顔がある。</h2>
+    <p class="lead reveal d2">経営学者・野中郁次郎は、知識を「個人の頭の中の情報」とは捉えませんでした。知識は、人と人が関係し合う共有された「場（ba）」の中で生まれる。場から切り離された瞬間、知識はただの「情報」になる——。その場には、4つの顔があります。この4つを意図的に編むことを、私たちは<b style="color:var(--accent);font-weight:700">場のアーキテクチャ</b>と呼んでいます。</p>
+
+    <div class="grid two">
+      <div class="card reveal d1">
+        <span class="ba-label">Originating Ba</span>
+        <h3>創発の場</h3>
+        <p>気持ち・感情・経験・メンタルモデルを、身体的に共有する場。「いまの気持ち」「いまの気づき」を場に置き、言葉にならない感覚が共感として拡がる。土壌になるのは<b style="color:var(--accent)">心理的安全性</b>。</p>
+        <div class="ai-note"><b>AI</b>もっとも入りにくい領域。気配や場の空気は、まだ人と人のあいだにしか宿らない。</div>
+      </div>
+      <div class="card reveal d2">
+        <span class="ba-label">Dialoguing Ba</span>
+        <h3>対話の場</h3>
+        <p>感じていたことを、対話を通じて言葉にしていく場（外部化）。メタファー・ナラティブ・アブダクション（創造的推論）で、まだ言葉にならない何かを共有可能な形に立ち上げる。</p>
+        <div class="ai-note"><b>AI</b>「言語化」のプロセスは担い始めている。ただし、互いに揺れ変わり合う相互作用そのものは人のあいだに。</div>
+      </div>
+      <div class="card reveal d1">
+        <span class="ba-label">Cyber Ba</span>
+        <h3>体系の場</h3>
+        <p>言語化された知識を整理し、組み合わせ、体系化していく場。理論を学び、フレームワークに当てはめ、新しい構造が見えてくる。多くの「学び」のイメージはここに集中している。</p>
+        <div class="ai-note"><b>AI</b>もっとも得意とする領域。情報を文脈ごと読み込み、構造化し、新しい配置を提示する。</div>
+      </div>
+      <div class="card reveal d2">
+        <span class="ba-label">Exercising Ba</span>
+        <h3>実践の場</h3>
+        <p>学んだことを、現場で実際にやってみる場。手応えと自信の循環のなかで、形式知が少しずつ暗黙知へと染み込んでいく。「行動が続く設計」こそが、実践場のアーキテクチャ。</p>
+        <div class="ai-note"><b>AI</b>伴走者として入る。「明日できそうな小さな試み」を一緒に考え、現場で迷ったときの相談相手になる。</div>
+      </div>
+    </div>
+
+    <p class="reveal" style="margin-top:42px">4つの場は、独立しているわけではありません。<b style="color:var(--accent)">創発の場</b>で生まれた感覚が<b style="color:var(--accent)">対話の場</b>で言葉になり、<b style="color:var(--accent)">体系の場</b>で構造化され、<b style="color:var(--accent)">実践の場</b>で試され、また感覚として戻ってくる。場は、絡み合いながら回転している。そしてこの循環は、放っておいても自然には揃いません。だからこそ、意図的に設計する意味がある。</p>
+
+    <blockquote class="reveal">研修の設計者から、組織全体に広がる場のアーキテクトへ。</blockquote>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process" class="cream">
+  <div class="wrap">
+    <div class="eyebrow reveal">Process</div>
+    <h2 class="reveal d1">知を渡すのではなく、<br>知が生まれる過程に立ち会う。</h2>
+    <p class="lead reveal d2">知識やスキルを足すだけなら、これからはAIが引き受けていきます。Oxymoronが扱うのはその先——答えのない適応課題に向き合い、相反するものを抱えたまま、新しいものが創発していく過程そのものです。</p>
+
+    <h3 class="reveal" style="margin-top:54px">変容プロセス〈個人＝マネージャー〉内側から、順に立ち上がる</h3>
+    <div class="steps">
+      <div class="step reveal d1"><h3>① 信念が動く</h3><p>「メンバーは成長できる」という、忙しさに埋もれていた本来の信念を、対話で再発見する。</p></div>
+      <div class="step reveal d1"><h3>② 自信が生まれる</h3><p>小さな試行→メンバーの反応→「やれそう」という手応え（自己効力感）の循環。態度が行動を動かす構造を、現場で起こす。実証研究でも統計的に確かな効果が確認されています。</p></div>
+      <div class="step reveal d1"><h3>③ スキルが定着する</h3><p>問いかけ・傾聴・視点提示が、自然に出るようになる。</p></div>
+      <div class="step reveal d1"><h3>④ 場をつくれるようになる</h3><p>自分のチームに「成長を支援する場」を設計できる感覚が育つ。</p></div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:60px">変容プロセス〈チーム〉関係性のなかで、新しい知が創発する</h3>
+    <p class="reveal d1">チームの関係性のダイナミクス——誰の声が埋もれ、何が言いにくいか——を見ながら「場」を設計します。安心して声を交わせる関係性（プロセス）と、暗黙知が新しい知になっていく創造（コンテンツ）を、人とAIを創発のパートナーに往還させる。「言われたことをやる」関係から「自分の物語として参加し、新しいものを生み出す」関係へ。</p>
+    <blockquote class="reveal">私たちが渡すのは知識ではなく、新しい知が生まれる過程そのものです。</blockquote>
+  </div>
+</section>
+
+<!-- BUSINESS -->
+<section id="business" class="dark">
+  <div class="wrap">
+    <div class="eyebrow reveal">Business Domain</div>
+    <h2 class="reveal d1">テーブルの上の「コンテンツ」も、<br>その裏で動く「プロセス」ごと。</h2>
+    <p class="lead reveal d2">基盤はプロセスコンサルテーション。答えを配るのではなく、場のアーキテクチャを使って、個人・チーム・組織に創発の場を設計し、伴走します。入口は、たいてい一人のマネージャーの適応課題から。</p>
+    <div class="grid two">
+      <div class="card reveal d1"><span class="num">01</span><h3>入口：マネージャーの適応課題に、1on1から</h3><p>「成果も育成も」という板挟みに、メンバーとの1on1という最小の「場」から向き合う。関わり方が変わる4〜6週間。効果はデータで実証（自己効力感 d=1.15）。</p></div>
+      <div class="card reveal d2"><span class="num">02</span><h3>マネージャー同士のリフレクションの場</h3><p>同じ適応課題に向き合う管理職が集い、内省し合う。一人で抱え込まず、適応課題に向き合うプロセスそのものを伴走する。</p></div>
+      <div class="card reveal d1"><span class="num">03</span><h3>チーム全体の変容</h3><p>関係性と対話の質を変える。チームコーチングで、相反する声のあいだから、まだ名前のない解が立ち上がるチームへ。</p></div>
+      <div class="card reveal d2"><span class="num">04</span><h3>組織・新規事業の創発に伴走</h3><p>場のアーキテクチャを組織規模で設計。人とAIを創発のパートナーに、新しい知や新規事業が生まれるプロセスに伴走する。組織が自分で場を回せる状態まで。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- STRENGTH -->
+<section id="strength" class="cream">
+  <div class="wrap">
+    <div class="eyebrow reveal">Strength</div>
+    <h2 class="reveal d1">「なぜ効くか」を、理論とデータで語れる。</h2>
+    <div class="grid three">
+      <div class="card reveal d1"><h3>① 理論的見地に基づく</h3><p>アカデミック・プラクティショナー。立教LDC／Mezirow・Heifetz・野中・Argyris等の背骨で、「なぜ効くか」を説明できる。</p></div>
+      <div class="card reveal d2"><h3>② データで実証する</h3><p>ABCモデルの効果量で「感情・関係性が大切」を数字で示せる稀少さ。</p></div>
+      <div class="card reveal d3"><h3>③ AIを創発のパートナーに</h3><p>効率化の道具ではなく、新しい知・新規事業を生む相棒として使い切る。</p></div>
+      <div class="card reveal d1"><h3>④ コンテンツとプロセスの両方</h3><p>見えている課題だけでなく、その裏の関係性ごと、ダイナミックに扱える。</p></div>
+      <div class="card reveal d2"><h3>⑤ 個人〜組織を一本で貫く</h3><p>場のアーキテクチャで、個人・チーム・組織を入れ子の「場」として設計する。</p></div>
+      <div class="card reveal d3"><h3>⑥ 物語・言語化の力</h3><p>まだ名前のないものに、言葉を与える。</p></div>
+    </div>
+    <div class="metrics" style="margin-top:36px">
+      <span class="metric" style="border-color:var(--line);color:var(--muted)">自己効力感<b>d=1.15</b></span>
+      <span class="metric" style="border-color:var(--line);color:var(--muted)">認知<b>d=0.88</b></span>
+      <span class="metric" style="border-color:var(--line);color:var(--muted)">行動<b>d=0.51〜1.24</b></span>
+      <span class="metric" style="border-color:var(--line);color:var(--muted)">メンバー知覚<b>p=.006</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- MESSAGE -->
+<section id="message" class="dark">
+  <div class="wrap">
+    <div class="eyebrow reveal">Message</div>
+    <h2 class="reveal d1">それでも私は、<br>新しい物語は立ち上がる、と信じています。</h2>
+    <p class="reveal d2">制度も研修も整えた。それでも、現場から新しいものが生まれにくくなっていないでしょうか。AIが効率化を進めるほど、決まったことは速くなる。けれど、まだ名前のない何かが立ち上がる創発は、むしろこれから難しくなっていくのかもしれません。いま組織に本当に必要なのは、新しい知を生み出し続ける力——知識創造ではないでしょうか。</p>
+    <p class="reveal">自分自身、行き詰まった物語が、人との対話のなかで何度も書き換えられてきました。「ないものを埋める」から「あるものを生かす」へ。矛盾は、抱えたまま進んでいい——そう思えたとき、世界の見え方が変わりました。</p>
+    <p class="reveal">組織の難題の多くは、スキル不足ではなく、人の前提や関係性が問われる「適応課題」です。だからOxymoronは、答えを渡すのではなく、問いを一緒に立て、新しい知が生まれる「場」を設計し、変容に伴走します。</p>
+    <p class="reveal">創発が難しくなる時代だからこそ、それを信じる者として、あなたの隣にいたい。一人ひとりが「自分の物語」として参加し、矛盾のあいだから、まだ名前のない物語が立ち上がる——その瞬間に、ともにありたいと思っています。</p>
+    <div class="signature reveal"><small>株式会社 Oxymoron 代表</small>岸本 渉</div>
+  </div>
+</section>
+
+<footer>
+  <div class="f-brand">OXYMORON</div>
+  <div>まだ名前のない物語が立ち上がる、ともにある。</div>
+</footer>
+
+<script>
+  // スクロール進捗バー & ナビ背景
+  const progress = document.getElementById('progress');
+  const nav = document.getElementById('nav');
+  function onScroll(){
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (window.scrollY / h * 100) + '%';
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // スクロール連動フェードイン (IntersectionObserver)
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
