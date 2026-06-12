@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マネジメントリフレクション｜Oxymoron</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16161d;
+    --ink-soft:#2a2a33;
+    --cream:#f7f4ee;
+    --cream-2:#efe9df;
+    --paper:#fdfcfa;
+    --accent:#b5613f;       /* terracotta */
+    --accent-deep:#8f4226;
+    --line:rgba(0,0,0,.10);
+    --muted:#6b6b73;
+    --serif:'Shippori Mincho', serif;
+    --sans:'Noto Sans JP', sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:var(--paper);
+    line-height:1.95;
+    font-weight:400;
+    letter-spacing:.02em;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* スクロール進捗バー */
+  #progress{
+    position:fixed;top:0;left:0;height:3px;width:0%;
+    background:linear-gradient(90deg,var(--accent),var(--accent-deep));
+    z-index:1000;transition:width .1s linear;
+  }
+
+  /* ナビ */
+  nav{
+    position:fixed;top:0;left:0;width:100%;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px 6vw;z-index:900;
+    backdrop-filter:blur(8px);
+    background:rgba(253,252,250,0);
+    transition:background .4s ease, box-shadow .4s ease, padding .4s ease;
+  }
+  nav.scrolled{background:rgba(253,252,250,.85);box-shadow:0 1px 0 var(--line);padding:12px 6vw}
+  nav .brand{font-family:var(--serif);font-weight:600;font-size:1.05rem;letter-spacing:.12em;color:var(--ink);text-decoration:none;display:flex;align-items:baseline;gap:10px}
+  nav .brand small{font-family:var(--sans);font-size:.6rem;letter-spacing:.3em;color:var(--muted);font-weight:500}
+  nav .links{display:flex;gap:24px;align-items:center}
+  nav .links a{font-size:.78rem;letter-spacing:.14em;color:var(--muted);text-decoration:none;transition:color .25s}
+  nav .links a:hover{color:var(--accent)}
+  nav .links a.back{color:var(--accent)}
+  @media(max-width:880px){nav .links a:not(.back){display:none}}
+
+  /* セクション共通 */
+  section{padding:clamp(80px,12vh,150px) 6vw;position:relative}
+  .wrap{max-width:920px;margin:0 auto}
+  .eyebrow{
+    font-family:var(--sans);font-size:.72rem;letter-spacing:.4em;
+    text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:22px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .eyebrow::before{content:"";width:34px;height:1px;background:var(--accent)}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.7rem,4vw,2.5rem);line-height:1.45;letter-spacing:.03em;margin-bottom:30px}
+  h3{font-family:var(--serif);font-weight:500;font-size:clamp(1.15rem,2.4vw,1.45rem);letter-spacing:.04em;margin-bottom:12px;color:var(--ink)}
+  p{font-size:clamp(.95rem,1.6vw,1.04rem);color:var(--ink-soft)}
+  p+p{margin-top:18px}
+
+  /* HERO */
+  #hero{
+    min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+    background:radial-gradient(120% 120% at 70% 10%, #20202b 0%, var(--ink) 55%, #0e0e14 100%);
+    color:var(--cream);padding:6vw;overflow:hidden;
+  }
+  #hero .hero-inner{max-width:1000px;margin:0 auto;width:100%}
+  #hero .kicker{font-size:.74rem;letter-spacing:.5em;color:var(--accent);text-transform:uppercase;margin-bottom:34px}
+  #hero h1{
+    font-family:var(--serif);font-weight:600;
+    font-size:clamp(2.1rem,6.5vw,4.6rem);line-height:1.5;letter-spacing:.04em;
+    color:#fbf8f2;
+  }
+  #hero h1 .em{color:var(--accent);font-style:normal}
+  #hero .sub{margin-top:38px;font-size:clamp(.9rem,1.8vw,1.1rem);color:rgba(247,244,238,.72);max-width:640px;line-height:2}
+  .scroll-cue{position:absolute;bottom:34px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(247,244,238,.5);font-size:.66rem;letter-spacing:.3em}
+  .scroll-cue .dot{width:1px;height:46px;background:linear-gradient(rgba(247,244,238,.5),transparent);animation:cue 2s infinite}
+  @keyframes cue{0%{transform:scaleY(.3);transform-origin:top;opacity:.3}50%{transform:scaleY(1);opacity:1}100%{transform:scaleY(.3);transform-origin:bottom;opacity:.3}}
+
+  /* 背景の濃淡切替 */
+  .dark{background:var(--ink);color:var(--cream)}
+  .dark h2{color:#fbf8f2}
+  .dark h3{color:#fbf8f2}
+  .dark p{color:rgba(247,244,238,.78)}
+  .dark .eyebrow{color:#d98a66}.dark .eyebrow::before{background:#d98a66}
+  .cream{background:var(--cream)}
+
+  /* カード/グリッド */
+  .grid{display:grid;gap:26px;margin-top:42px}
+  .grid.two{grid-template-columns:repeat(2,1fr)}
+  .grid.three{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:760px){.grid.two,.grid.three{grid-template-columns:1fr}}
+  .card{
+    background:var(--paper);border:1px solid var(--line);border-radius:14px;
+    padding:30px 28px;transition:transform .5s cubic-bezier(.2,.7,.2,1), box-shadow .5s;
+  }
+  .dark .card{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
+  .card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,0,0,.10)}
+  .card .num{font-family:var(--serif);font-size:1.7rem;color:var(--accent);font-weight:600;display:block;margin-bottom:10px}
+  .card p{font-size:.92rem;line-height:1.85}
+
+  /* ステップ（プロセス） */
+  .steps{margin-top:44px;border-left:2px solid var(--line);padding-left:34px;display:flex;flex-direction:column;gap:36px}
+  .dark .steps{border-color:rgba(255,255,255,.18)}
+  .step{position:relative}
+  .step::before{content:"";position:absolute;left:-43px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px var(--cream-2)}
+  .dark .step::before{box-shadow:0 0 0 5px var(--ink)}
+  .step h3{margin-bottom:8px}
+  .step .tag{display:inline-block;font-family:var(--sans);font-size:.66rem;letter-spacing:.18em;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:3px 12px;margin-bottom:10px}
+
+  /* リード強調 */
+  .lead{font-size:clamp(1.05rem,2vw,1.25rem);line-height:2.1;color:var(--ink)}
+  .dark .lead{color:#f3eee5}
+  blockquote{
+    font-family:var(--serif);font-size:clamp(1.1rem,2.4vw,1.5rem);line-height:1.85;
+    border-left:3px solid var(--accent);padding:6px 0 6px 26px;margin:40px 0;color:var(--ink);letter-spacing:.04em;
+  }
+  .dark blockquote{color:#fbf8f2}
+
+  /* メトリクス（エビデンス大カード） */
+  .metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+  @media(max-width:760px){.metric-grid{grid-template-columns:1fr}}
+  .metric-card{
+    border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:26px 20px;text-align:center;
+    background:rgba(255,255,255,.03);
+  }
+  .metric-card .big{font-family:var(--serif);font-weight:700;font-size:clamp(1.9rem,5vw,2.7rem);color:var(--accent);line-height:1.1;display:block}
+  .metric-card .lbl{margin-top:12px;font-size:.78rem;letter-spacing:.04em;color:rgba(247,244,238,.78);line-height:1.7}
+  .metric-card .eff{display:inline-block;margin-top:8px;font-size:.64rem;letter-spacing:.18em;color:#d98a66;border:1px solid rgba(217,138,102,.5);border-radius:999px;padding:2px 10px}
+
+  /* タグ列（理由・差別化の小ピル） */
+  .pill-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+  .pill{border:1px solid var(--line);border-radius:999px;padding:9px 18px;font-size:.8rem;letter-spacing:.04em;color:var(--ink-soft)}
+  .dark .pill{border-color:rgba(255,255,255,.18);color:rgba(247,244,238,.85)}
+
+  /* 註釈 */
+  .note{margin-top:26px;font-size:.78rem;line-height:1.85;color:var(--muted)}
+  .dark .note{color:rgba(247,244,238,.55)}
+
+  /* 二つの問い（対比） */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:42px}
+  @media(max-width:760px){.compare{grid-template-columns:1fr}}
+  .compare .col{border-radius:14px;padding:30px 28px;border:1px solid var(--line)}
+  .compare .col.solve{background:rgba(0,0,0,.035)}
+  .compare .col.reflect{background:#fff;border-color:var(--accent);box-shadow:0 12px 34px rgba(181,97,63,.10)}
+  .compare .col .ctag{font-size:.68rem;letter-spacing:.16em;font-weight:600;margin-bottom:18px;display:inline-block}
+  .compare .col.solve .ctag{color:var(--muted)}
+  .compare .col.reflect .ctag{color:var(--accent)}
+  .compare ul{list-style:none;display:flex;flex-direction:column;gap:14px}
+  .compare li{font-size:.95rem;line-height:1.75;padding-left:22px;position:relative;color:var(--ink-soft)}
+  .compare li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  .compare .col.solve li::before{background:var(--muted)}
+  .compare .vs{display:flex;justify-content:center;align-items:center;margin:6px 0}
+
+  /* 声（定性コメント） */
+  .voices{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:34px}
+  @media(max-width:760px){.voices{grid-template-columns:1fr}}
+  .voice-col .vhead{margin-bottom:18px}
+  .voice-col .vhead .pin{font-family:var(--sans);font-size:.66rem;letter-spacing:.16em;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:5px 14px}
+  .voice-q{border-left:2px solid rgba(181,97,63,.55);padding:2px 0 2px 16px;margin-bottom:18px;font-size:.92rem;line-height:1.85;color:rgba(247,244,238,.82)}
+  .voice-cap{font-size:.74rem;line-height:1.75;color:rgba(247,244,238,.5);margin-top:8px}
+
+  /* HR課題チェック（買い手の自分事化） */
+  .symptoms{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:38px}
+  @media(max-width:760px){.symptoms{grid-template-columns:1fr}}
+  .symptom{display:flex;gap:13px;align-items:flex-start;padding:18px 20px;background:var(--paper);border:1px solid var(--line);border-radius:12px;font-size:.94rem;color:var(--ink-soft);line-height:1.7}
+  .symptom .ck{color:var(--accent);font-weight:700;flex:0 0 auto;font-family:var(--serif)}
+
+  /* 因果チェーン（アウトカムの橋） */
+  .chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;margin-top:42px}
+  .chain .node{flex:1 1 150px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);border-radius:12px;padding:18px 14px;text-align:center;display:flex;flex-direction:column;justify-content:center}
+  .chain .node.proven{border-color:var(--accent);background:rgba(181,97,63,.10)}
+  .chain .node .s{display:block;font-family:var(--serif);color:#fbf8f2;font-size:.98rem;line-height:1.5;margin-bottom:8px}
+  .chain .node small{font-size:.68rem;letter-spacing:.1em;color:var(--accent)}
+  .chain .arrow{display:flex;align-items:center;color:var(--accent);font-size:1.2rem;flex:0 0 auto}
+  @media(max-width:760px){.chain{flex-direction:column}.chain .node{width:100%}.chain .arrow{transform:rotate(90deg);justify-content:center}}
+  .chain-legend{margin-top:18px;font-size:.76rem;letter-spacing:.04em;color:rgba(247,244,238,.6);display:flex;flex-wrap:wrap;gap:18px}
+  .chain-legend span{display:flex;align-items:center;gap:8px}
+  .chain-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .chain-legend i.p{background:rgba(181,97,63,.6);border:1px solid var(--accent)}
+  .chain-legend i.a{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2)}
+
+  /* CTA */
+  .cta{display:inline-flex;align-items:center;gap:12px;margin-top:42px;background:var(--accent);color:#fff;text-decoration:none;
+    font-size:.92rem;letter-spacing:.08em;padding:16px 34px;border-radius:999px;transition:background .3s, transform .3s}
+  .cta:hover{background:var(--accent-deep);transform:translateY(-3px)}
+
+  /* フッター */
+  footer{background:#0e0e14;color:rgba(247,244,238,.55);text-align:center;padding:60px 6vw;font-size:.78rem;letter-spacing:.1em}
+  footer .f-brand{font-family:var(--serif);font-size:1.3rem;color:#fbf8f2;letter-spacing:.18em;margin-bottom:14px}
+  footer a{color:var(--accent);text-decoration:none}
+
+  /* ===== スクロールアニメーション ===== */
+  .reveal{opacity:0;transform:translateY(38px);transition:opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1)}
+  .reveal.visible{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.10s}.reveal.d2{transition-delay:.20s}.reveal.d3{transition-delay:.30s}.reveal.d4{transition-delay:.40s}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav id="nav">
+  <a href="https://sho2437.github.io/oxymoron-web/" class="brand">OXYMORON <small>Management Reflection</small></a>
+  <div class="links">
+    <a href="#problem">Problem</a>
+    <a href="#concept">Concept</a>
+    <a href="#process">Process</a>
+    <a href="#evidence">Evidence</a>
+    <a href="#theory">Theory</a>
+    <a href="#program">Program</a>
+    <a href="https://sho2437.github.io/oxymoron-web/" class="back">← Top</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header id="hero">
+  <div class="hero-inner">
+    <div class="kicker reveal">Management Reflection</div>
+    <h1 class="reveal d1">「解決」の前に、<br><span class="em">見方</span>を問い直す。</h1>
+    <p class="sub reveal d2">成果と育成、任せることと介入すること。割り切れない矛盾を抱えたまま、マネージャーは日々の問題解決に追われ続ける。その手前で——自分はいま、何を「問題」として見ているのか。マネジメントリフレクションは、マネジメントの“OS”そのものを更新する営みです。</p>
+  </div>
+  <div class="scroll-cue"><span>SCROLL</span><span class="dot"></span></div>
+</header>
+
+<!-- 00.5 FOR HR -->
+<section id="for-hr" class="cream">
+  <div class="wrap">
+    <div class="eyebrow reveal">For HR &amp; Leaders</div>
+    <h2 class="reveal d1">こんな課題に、<br>心当たりはありませんか。</h2>
+    <p class="lead reveal d2">制度も研修も、1on1も整えた。それでも——</p>
+    <div class="symptoms">
+      <div class="symptom reveal d1"><span class="ck">✓</span><span>管理職が「罰ゲーム」化し、疲弊や離職の兆しが見える。</span></div>
+      <div class="symptom reveal d2"><span class="ck">✓</span><span>1on1を導入したが、面談が「進捗確認」で形骸化している。</span></div>
+      <div class="symptom reveal d1"><span class="ck">✓</span><span>研修をやっても、現場での関わりが変わった実感がない。</span></div>
+      <div class="symptom reveal d2"><span class="ck">✓</span><span>人的資本開示で問われる「管理職の育成力」を、言葉にしきれない。</span></div>
+    </div>
+    <p class="reveal" style="margin-top:30px">その多くは、スキル不足ではありません。<b style="color:var(--accent)">マネージャーの「見方」が問い直される機会が、どこにもない</b>ことから来ています。マネジメントリフレクションは、そこに働きかけます。</p>
+  </div>
+</section>
+
+<!-- 01 PROBLEM -->
+<section id="problem" class="cream">
+  <div class="wrap">
+    <div class="eyebrow reveal">Problem</div>
+    <h2 class="reveal d1">マネージャーは、なぜこんなに苦しいのか。</h2>
+    <p class="lead reveal d2">成果と育成。任せることと、介入すること。短期の数字と、中長期の成長。現場の声と、経営の方針。これらは、どちらか一方を選べば解決する話ではありません。どちらも大切だからこそ、難しい。多くのマネージャーは、その矛盾を抱えたまま、毎日起きる問題に対応し続けています。</p>
+    <p class="reveal">現場では毎日、何かが起きます。成果が出ない。メンバーが育たないように見える。任せた仕事が進まない。空気が重い。そのたびにマネージャーは原因を探し、進め方を直す。問題解決は、必要です。ただ、ここに落とし穴があります。</p>
+    <blockquote class="reveal">「その問題をいかに解くか」だけを考え続けていると、自分が何を問題として見ているのか、その見方そのものは、問い直されないままになる。</blockquote>
+    <p class="reveal">対処する。また問題が起きる。また対処する——この循環の中で、自分の前提やマネジメント観が、静かに置き去りになっていきます。いま管理職は「罰ゲーム」と呼ばれるほど板挟みになっている。けれど本当の難しさは、忙しさそのものより、<b style="color:var(--accent)">見方を立て直す時間が、どこにもない</b>ことかもしれません。</p>
+  </div>
+</section>
+
+<!-- 01.5 TWO QUESTIONS -->
+<section id="two-questions" class="cream" style="background:var(--cream-2)">
+  <div class="wrap">
+    <div class="eyebrow reveal">Same scene, two questions</div>
+    <h2 class="reveal d1">同じ場面で、<br>二つの問いが立てられる。</h2>
+    <p class="lead reveal d2">たとえば、あるメンバーが「育っていない」と感じている。そのとき立てられる問いは、一つではありません。</p>
+    <div class="compare">
+      <div class="col solve reveal d1">
+        <span class="ctag">問題解決の問い（よくある）</span>
+        <ul>
+          <li>どんなスキルが、足りないのか。</li>
+          <li>成長を促すには、どの案件を任せるか。</li>
+          <li>フィードバックで、何を一番に伝えるか。</li>
+        </ul>
+      </div>
+      <div class="col reflect reveal d2">
+        <span class="ctag">リフレクションの問い（その手前）</span>
+        <ul>
+          <li>どうして自分は、その人を「育っていない」と感じているのか。</li>
+          <li>「どうせできない」という前提が、自分の中にないか。</li>
+          <li>自分が引き取りすぎて、その人の成長機会を奪っていないか。</li>
+        </ul>
+      </div>
+    </div>
+    <p class="reveal" style="margin-top:34px">問い直すのは「メンバーをいかに変えるか」だけではありません。<b style="color:var(--accent)">マネージャー自身が、無意識のうちに何を見ていて、何を問題として捉えているのか。その見方そのもの</b>です。「育っていない」という問題は、もしかすると「他人の進め方を信じきれない」「自分でやった方が早い」という、自分の仕事観を映しているのかもしれません。</p>
+  </div>
+</section>
+
+<!-- 02 WHY -->
+<section id="why" class="dark">
+  <div class="wrap">
+    <div class="eyebrow reveal">Why it doesn't reach</div>
+    <h2 class="reveal d1">スキルを足しても、振り返らせても、<br>なぜ“見方”は変わらないのか。</h2>
+    <p class="lead reveal d2">組織の難題の多くは、知識やスキルを足せば解ける「技術的問題」ではなく、人の信念や関係性が変わらないと解けない「適応課題」です。研修でスキルを配っても、適応課題には届きにくい。</p>
+    <p class="reveal">「振り返りが大切」とよく言われます。何がうまくいき、何がいかず、次どう改善するか。大切ですが、それだけではマネジメント観は更新されません。一般的な振り返りは、<b style="color:#d98a66">すでに起きた出来事への反省</b>にとどまりやすいからです。</p>
+    <blockquote class="reveal">マネジメントリフレクションが対象にするのは、出来事そのものではない。その出来事を、自分はどう見ていたのか。何を恐れ、何を守ろうとしていたのか。どんなマネージャーであろうとしていたのか——。</blockquote>
+    <p class="reveal">そこに目を向けたとき、単なる反省では見えなかったものが、見えてきます。</p>
+  </div>
+</section>
+
+<!-- 03 CONCEPT -->
+<section id="concept" class="cream">
+  <div class="wrap">
+    <div class="eyebrow reveal">Concept</div>
+    <h2 class="reveal d1">マネジメントリフレクションとは。</h2>
+    <p class="lead reveal d2">目の前の問題をすぐ解こうとする前に、その問題を見ているマネージャー自身の見方へ、いったん目を向ける営み。Oxymoronはこれを、研修やプログラムの“底”に流れる共通の構えとして据えています。</p>
+    <div class="grid three">
+      <div class="card reveal d1"><span class="num">①</span><h3>“見ている自分”を問う</h3><p>「メンバーが育っていない」と感じるとき、原因はそのメンバーだけにあるとは限らない。「どうせできない」「自分でやった方が早い」という、自分の仕事観や認知の癖を映しているのかもしれない。</p></div>
+      <div class="card reveal d2"><span class="num">②</span><h3>揺らぎを、なかったことにしない</h3><p>不安なのに強い自分を見せる。迷っているのに正解を持つように振る舞う。揺らぎを封じるほど、反応は硬くなる。「マネージャーも揺らいでいてよい」と思える場から、見つめ直しは始まる。</p></div>
+      <div class="card reveal d3"><span class="num">③</span><h3>同士だから、開ける</h3><p>会社も立場も違っても、抱えている矛盾の構造は似ている。同士だからこそ「自分にも似たことがある」と受け取り合え、自分が見ている景色の輪郭が、はっきりしていく。</p></div>
+    </div>
+    <blockquote class="reveal">出来事を振り返るだけでなく、その出来事を見ていた自分自身の見方を問い直す。そこから、マネジメントは少しずつ更新されていく。</blockquote>
+  </div>
+</section>
+
+<!-- 03.5 WAVERING -->
+<section id="wavering" class="dark">
+  <div class="wrap">
+    <div class="eyebrow reveal">A common concern</div>
+    <h2 class="reveal d1">「揺らいでいい」は、<br>現場を緩めることではない。</h2>
+    <p class="lead reveal d2">「マネージャーが揺らいでいい、答えを出さなくていい——それでは成果責任が緩むのでは?」。よくいただく懸念に、先に答えます。</p>
+    <div class="grid two">
+      <div class="card reveal d1"><h3>揺らぎを“封じる”と</h3><p>不安なのに、強い自分を見せる。迷っているのに、正解を持つように振る舞う。関わりは少しずつ硬くなり、踏み込めず、任せきれなくなる。心理的安全性を掲げても、自分が安心して踏み込めていない。</p></div>
+      <div class="card reveal d2"><h3>揺らぎを“扱える”と</h3><p>メンバーの現実をそのまま受け止められる。必要なときには、迷いを抱えたまま踏み込める。成果と育成、どちらも手放さずに「抱えたまま」立ち続けられる。</p></div>
+    </div>
+    <blockquote class="reveal">揺らぎを認めることは、成果から降りることではない。成果と育成のあいだに立ち続ける“足腰”をつくることです。</blockquote>
+  </div>
+</section>
+
+<!-- 04 PROCESS -->
+<section id="process" class="cream" style="background:var(--cream-2)">
+  <div class="wrap">
+    <div class="eyebrow reveal">Process</div>
+    <h2 class="reveal d1">どのように、見方は更新されるのか。</h2>
+    <p class="lead reveal d2">一度の気づきで終わらせない。<b style="color:var(--accent)">理論で腹落ちし → 現場で試し → 同士と振り返る</b>のサイクルを回すことで、見方は行動になり、行動は定着していきます。</p>
+    <div class="steps">
+      <div class="step reveal d1"><span class="tag">Day 1</span><h3>暗黙の人間観を、可視化して問い直す</h3><p>「人は変われる／変われない」という、知らずに握っている前提に光を当て、組み替える。</p></div>
+      <div class="step reveal d1"><span class="tag">Day 2</span><h3>問いかけと、事実ベースのフィードバックを体得する</h3><p>答えを渡す関わりから、相手が自分で考え抜く関わりへ。視点を変える問い、SBIで事実に基づくフィードバックを練習する。</p></div>
+      <div class="step reveal d1"><span class="tag">Day 3</span><h3>実践を振り返り、互いに言葉で支え合う</h3><p>現場での手応えと迷いを持ち寄り、同士の言葉で「これでいいんだ」を確かめる。</p></div>
+      <div class="step reveal d1"><span class="tag">実践期間</span><h3>1on1で試し、マネージャー同士で内省し合う</h3><p>学びを最小の「場」（1on1）で試し、その経験をまた場に戻す。回しながら、見方は身体に馴染んでいく。</p></div>
+    </div>
+    <p class="note reveal">※ この往還は、経営学者・野中郁次郎の「4つの場」（創発→対話→体系→実践）の循環に対応します。詳しくはトップページ「場のアーキテクチャ」へ。</p>
+  </div>
+</section>
+
+<!-- 05 EVIDENCE -->
+<section id="evidence" class="dark">
+  <div class="wrap">
+    <div class="eyebrow reveal">Evidence</div>
+    <h2 class="reveal d1">「見方が変わった」を、<br>どこまで確かめたか。</h2>
+    <p class="lead reveal d2">正直に書きます。これは、マネージャー15名・その部下33名を対象にした、対照群を置かない<b style="color:#d98a66">探索的な研究</b>（立教大学大学院 修士研究）です。大規模実験ではありません。だからこそ私たちは、数値の大小よりも、<b style="color:#d98a66">何が・どこまで動いたのか</b>を、そのままお見せします。</p>
+
+    <h3 class="reveal" style="margin-top:56px">私たちが、最終的に狙っていること</h3>
+    <div class="chain">
+      <div class="node proven reveal d1"><span class="s">① 人間観が動く</span><small>今回 実証 / d=0.88</small></div>
+      <div class="arrow reveal d1">→</div>
+      <div class="node proven reveal d1"><span class="s">② 自信が生まれる</span><small>今回 実証 / d=1.15</small></div>
+      <div class="arrow reveal d2">→</div>
+      <div class="node reveal d2"><span class="s">③ 関わりが変わる</span><small>問いかけ・待つ</small></div>
+      <div class="arrow reveal d3">→</div>
+      <div class="node reveal d3"><span class="s">④ 1on1の質が変わる</span><small>検証中</small></div>
+      <div class="arrow reveal d3">→</div>
+      <div class="node reveal d4"><span class="s">⑤ メンバーの成長・成果</span><small>めざす先</small></div>
+    </div>
+    <div class="chain-legend reveal">
+      <span><i class="p"></i>今回の研究で実証できたところ</span>
+      <span><i class="a"></i>そこから先の、狙うアウトカム（現在も検証中）</span>
+    </div>
+    <p class="reveal" style="margin-top:24px">ABCモデル（態度→行動→結果）の考え方に沿えば、<b style="color:var(--accent)">最初に動かすべきは①②のマネージャーの内面</b>。今回の研究は、その入口が確かに動くことを示しました。③以降は、その先に続く狙いです。</p>
+
+    <h3 class="reveal" style="margin-top:60px">今回、確かに動いたもの（マネージャー側）</h3>
+    <div class="metric-grid">
+      <div class="metric-card reveal d1"><span class="big">d=1.15</span><span class="lbl">成長支援への<br>自己効力感</span><br><span class="eff">大きい効果</span></div>
+      <div class="metric-card reveal d2"><span class="big">d=0.88</span><span class="lbl">成長的知能観<br>（人は変われる信念）</span><br><span class="eff">大きい効果</span></div>
+      <div class="metric-card reveal d3"><span class="big">d=1.24</span><span class="lbl">視点を変える<br>問いかけ</span><br><span class="eff">大きい効果</span></div>
+    </div>
+
+    <h3 class="reveal" style="margin-top:60px">数字よりも、語りが核だった</h3>
+    <p class="reveal d1">いちばんの変化は、効果量の数字ではなく、当事者の言葉に表れていました。研究（自由記述・インタビュー）で集めた声を、そのまま紹介します。</p>
+    <blockquote class="reveal">学術的なソースを示してもらえたので、“これでよいのだ”と腹落ちした。そのため実践してみようと思え、実際にやってみて効果を実感した。<span style="display:block;font-family:var(--sans);font-size:.72rem;letter-spacing:.2em;color:var(--accent);margin-top:12px">— 参加マネージャー</span></blockquote>
+    <div class="voices">
+      <div class="voice-col reveal d1">
+        <div class="vhead"><span class="pin">マネージャーの声</span></div>
+        <div class="voice-q">以前は私から答えを言ってしまっていたが、ワークショップ後は、メンバーへ問いかけだけをするように変えた。</div>
+        <div class="voice-q">「導く（教える）」マインドから、「言わせる」マインドへ、切り替わってきた実感がある。</div>
+        <div class="voice-q">１on１で“何かしなきゃ”と思っていたが、傾聴を続けたら、しなくてもいいのかもと思えた。イラッとせず、心にゆとりができた。</div>
+      </div>
+      <div class="voice-col reveal d2">
+        <div class="vhead"><span class="pin">メンバーの声</span></div>
+        <div class="voice-q">以前よりも、「話す」より「聞く」姿勢の方が強くなったように感じる。</div>
+        <div class="voice-q">部下から話し始めるのを、以前よりも「待つ」ようになったと感じた。</div>
+        <div class="voice-q">「どうしてそう考えたのか」と問われることが増え、自分で考える機会が増えた。</div>
+        <p class="voice-cap">※ 焦点だった行動の“数値”はメンバー知覚では大きく動かなかった。それでも、関わりの質の変化は、こうした声に表れている。</p>
+      </div>
+    </div>
+    <p class="reveal" style="margin-top:30px">変化は、まずマネージャーの内面から始まり、関わりへと染み出していく——その途中を、このデータと声は捉えています。</p>
+    <p class="note reveal">※ N=15（マネージャー）・対照群なしの探索的研究のため、効果量は過大に出やすく、因果を断定するものではありません。数値は3日間＋実践期間の介入研究の結果で、半日〜1dayのWSはその入口・体験版です。私たちは、この限界を承知の上で、研究を重ねながら提供を磨いています。</p>
+  </div>
+</section>
+
+<!-- 06 THEORY -->
+<section id="theory" class="cream">
+  <div class="wrap">
+    <div class="eyebrow reveal">Theory</div>
+    <h2 class="reveal d1">なぜ効くのか。背骨にある理論。</h2>
+    <p class="lead reveal d2">マネジメントリフレクションは、思いつきではありません。成人の学びと変容をめぐる、確かな理論の系譜の上に立っています。</p>
+    <div class="grid three">
+      <div class="card reveal d1"><h3>変容的学習</h3><p>Mezirow。前提が問い直され、意味の枠組みそのものが変わる学び。</p></div>
+      <div class="card reveal d2"><h3>省察的実践</h3><p>Schön。行為の中で省みる実践者。経験を“振り返るだけ”にしない。</p></div>
+      <div class="card reveal d3"><h3>ダブルループ学習</h3><p>Argyris。「やり方」だけでなく「前提」を問い直す学習。</p></div>
+      <div class="card reveal d1"><h3>免疫マップ</h3><p>Kegan。変化を妨げている、裏の固定観念に気づく。</p></div>
+      <div class="card reveal d2"><h3>適応課題</h3><p>Heifetz。技術では解けない、信念と関係性の課題。</p></div>
+      <div class="card reveal d3"><h3>場 ／ 自己効力感</h3><p>野中（知識は「場」で生まれる）。Bandura（「やれそう」が行動を動かす）。</p></div>
+    </div>
+    <p class="reveal" style="margin-top:36px">これらの論文・書籍を1本ずつ読み解く連載 <b style="color:var(--accent)">「背骨を読む」</b> も公開しています。</p>
+  </div>
+</section>
+
+<!-- 07 WHY OXYMORON -->
+<section id="why-oxymoron" class="dark">
+  <div class="wrap">
+    <div class="eyebrow reveal">Why Oxymoron</div>
+    <h2 class="reveal d1">「気づかせる」を、<br>理論とデータで。</h2>
+    <div class="grid two">
+      <div class="card reveal d1"><h3>アカデミック・プラクティショナー</h3><p>立教LDC修了。Mezirow・Heifetz・野中・Argyris等の背骨で、「なぜ効くか」を説明できる。</p></div>
+      <div class="card reveal d2"><h3>データで実証する</h3><p>「感情・関係性が大切」を効果量で示せる稀少さ。感覚論で終わらせない。</p></div>
+      <div class="card reveal d1"><h3>コンテンツとプロセスの両方</h3><p>見えている課題だけでなく、その裏で動く関係性ごと、ダイナミックに扱える。</p></div>
+      <div class="card reveal d2"><h3>媒介者のスタンス</h3><p>「変える」より「気づかせる」。答えを渡さず、問いを隣に置く。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 PROGRAM -->
+<section id="program" class="cream">
+  <div class="wrap">
+    <div class="eyebrow reveal">Program</div>
+    <h2 class="reveal d1">一人のマネージャーから、組織へ。</h2>
+    <p class="lead reveal d2">マネジメントリフレクションは、規模を変えながら入れ子に広がります。入口は、たいてい一人のマネージャーから。</p>
+    <div class="steps">
+      <div class="step reveal d1"><span class="tag">STEP 1</span><h3>マネジメントリフレクション（半日〜1day WS）</h3><p>まず体験する。信念の可視化・同士のシェア・次の一手の言語化。単体でも完結するリフレクション体験。</p></div>
+      <div class="step reveal d1"><span class="tag">STEP 2</span><h3>マネージャー同士のリフレクションの場（継続）</h3><p>同じ適応課題に向き合う管理職が集い、定期的に内省し合う。一人で抱え込まない。</p></div>
+      <div class="step reveal d1"><span class="tag">STEP 3</span><h3>1on1成長支援プログラム（3day＋実践期間）</h3><p>実証済みの本格版。意識・自信・行動の3層に複合介入する（d=0.88〜1.24）。</p></div>
+      <div class="step reveal d1"><span class="tag">STEP 4</span><h3>チーム／組織へ</h3><p>関係性と対話の質を変え、組織が自分で「場」を回せる状態まで伴走する。</p></div>
+    </div>
+    <blockquote class="reveal">まずは「マネジメントリフレクション」を、貴社のマネージャーと。</blockquote>
+    <a href="https://sho2437.github.io/oxymoron-web/" class="cta reveal">お問い合わせ・資料請求 →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="f-brand">OXYMORON</div>
+  <div>まだ名前のない物語が立ち上がる、ともにある。</div>
+  <div style="margin-top:18px"><a href="https://sho2437.github.io/oxymoron-web/">← コーポレートトップへ戻る</a></div>
+</footer>
+
+<script>
+  // スクロール進捗バー & ナビ背景
+  const progress = document.getElementById('progress');
+  const nav = document.getElementById('nav');
+  function onScroll(){
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (window.scrollY / h * 100) + '%';
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // スクロール連動フェードイン (IntersectionObserver)
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
