@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>マネジメントリフレクション｜Oxymoron</title>
+<title>創発のマネジメント｜マネジメントリフレクション ─ Oxymoron</title>
+<meta name="description" content="管理職育成の「限界」から抜け出す、マネージャーのためのプロジェクト・ベースト・ラーニング型（PBL）プログラム。マネジメント・リフレクションを核に、メンバー育成からチームの創発までを現場で立ち上げる。立教大学大学院の修士研究で実証（自己効力感 d=1.15）。">
+<meta property="og:title" content="創発のマネジメント｜マネジメントリフレクション ─ Oxymoron">
+<meta property="og:description" content="管理職育成の「限界」から抜け出す、マネージャーのためのPBL型プログラム。見方を問い直すリフレクションを核に、創発の場をつくるマネージャーへ。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sho2437.github.io/oxymoron-web/management-reflection/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Shippori+Mincho:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -80,7 +85,7 @@
     color:var(--cream);padding:6vw;overflow:hidden;
   }
   #hero .hero-inner{max-width:1000px;margin:0 auto;width:100%}
-  #hero .kicker{font-size:.74rem;letter-spacing:.5em;color:var(--accent);text-transform:uppercase;margin-bottom:34px}
+  #hero .kicker{font-size:.82rem;letter-spacing:.3em;color:#e3a484;font-weight:600;text-transform:uppercase;margin-bottom:34px}
   #hero h1{
     font-family:var(--serif);font-weight:600;
     font-size:clamp(2.1rem,6.5vw,4.6rem);line-height:1.5;letter-spacing:.04em;
@@ -181,10 +186,16 @@
   .symptom{display:flex;gap:13px;align-items:flex-start;padding:18px 20px;background:var(--paper);border:1px solid var(--line);border-radius:12px;font-size:.94rem;color:var(--ink-soft);line-height:1.7}
   .symptom .ck{color:var(--accent);font-weight:700;flex:0 0 auto;font-family:var(--serif)}
 
+  /* スケール（目的層・3スケールの創発） */
+  .scale-flow{margin-top:18px;font-size:.82rem;letter-spacing:.08em;color:var(--muted);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .scale-flow b{color:var(--accent)}
+  .scale-flow .ar{color:var(--accent)}
+
   /* 因果チェーン（アウトカムの橋） */
   .chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;margin-top:42px}
   .chain .node{flex:1 1 150px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);border-radius:12px;padding:18px 14px;text-align:center;display:flex;flex-direction:column;justify-content:center}
   .chain .node.proven{border-color:var(--accent);background:rgba(181,97,63,.10)}
+  .chain .node.horizon{border-style:dashed;border-color:rgba(217,138,102,.55)}
   .chain .node .s{display:block;font-family:var(--serif);color:#fbf8f2;font-size:.98rem;line-height:1.5;margin-bottom:8px}
   .chain .node small{font-size:.68rem;letter-spacing:.1em;color:var(--accent)}
   .chain .arrow{display:flex;align-items:center;color:var(--accent);font-size:1.2rem;flex:0 0 auto}
@@ -194,6 +205,7 @@
   .chain-legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
   .chain-legend i.p{background:rgba(181,97,63,.6);border:1px solid var(--accent)}
   .chain-legend i.a{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2)}
+  .chain-legend i.h{background:transparent;border:1px dashed rgba(217,138,102,.7)}
 
   /* CTA */
   .cta{display:inline-flex;align-items:center;gap:12px;margin-top:42px;background:var(--accent);color:#fff;text-decoration:none;
@@ -210,6 +222,7 @@
   .reveal.visible{opacity:1;transform:none}
   .reveal.d1{transition-delay:.10s}.reveal.d2{transition-delay:.20s}.reveal.d3{transition-delay:.30s}.reveal.d4{transition-delay:.40s}
   @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+
 </style>
 </head>
 <body>
@@ -217,10 +230,12 @@
 <div id="progress"></div>
 
 <nav id="nav">
-  <a href="https://sho2437.github.io/oxymoron-web/" class="brand">OXYMORON <small>Management Reflection</small></a>
+  <a href="https://sho2437.github.io/oxymoron-web/" class="brand">OXYMORON <small>創発のマネジメント</small></a>
   <div class="links">
+    <a href="#purpose">Purpose</a>
     <a href="#problem">Problem</a>
     <a href="#concept">Concept</a>
+    <a href="#architect">Architect</a>
     <a href="#process">Process</a>
     <a href="#evidence">Evidence</a>
     <a href="#theory">Theory</a>
@@ -232,19 +247,59 @@
 <!-- HERO -->
 <header id="hero">
   <div class="hero-inner">
-    <div class="kicker reveal">Management Reflection</div>
+    <div class="kicker reveal">Management Reflection → Emergent Management</div>
     <h1 class="reveal d1">「解決」の前に、<br><span class="em">見方</span>を問い直す。</h1>
+    <p class="reveal d1" style="margin-top:32px;max-width:720px;font-family:var(--serif);font-size:clamp(1.35rem,3.2vw,2.1rem);line-height:1.55;color:#fbf8f2;letter-spacing:.06em;font-weight:600">マネジメントリフレクションから、<br><b style="color:#e3a484">創発のマネジメント</b>へ。</p>
+    <p class="reveal d2" style="margin-top:20px;max-width:620px;font-size:clamp(.9rem,1.7vw,1.05rem);line-height:1.95;color:rgba(247,244,238,.8);letter-spacing:.04em">管理職育成の「限界」から抜け出す、マネージャーのための<b style="color:#e3a484;font-weight:500">プロジェクト・ベースト・ラーニング型（PBL）</b>プログラム。</p>
     <p class="sub reveal d2">成果と育成、任せることと介入すること。割り切れない矛盾を抱えたまま、マネージャーは日々の問題解決に追われ続ける。その手前で——自分はいま、何を「問題」として見ているのか。マネジメントリフレクションは、マネジメントの“OS”そのものを更新する営みです。</p>
+    <div class="reveal d3" style="margin-top:40px">
+      <a href="https://sho2437.github.io/oxymoron-web/" class="cta" style="margin-top:0">お問い合わせ・資料請求 →</a>
+    </div>
   </div>
-  <div class="scroll-cue"><span>SCROLL</span><span class="dot"></span></div>
 </header>
 
+<!-- 00.2 PROOF BAR（v2新設：信頼の帯／P2） -->
+<section id="proof" style="background:#12121a;padding:38px 6vw;border-bottom:1px solid rgba(255,255,255,.06)">
+  <div class="wrap" style="max-width:1060px">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:22px 30px;text-align:center">
+      <div class="reveal d1" style="flex:1 1 200px;padding:0 14px">
+        <div style="font-family:var(--serif);font-size:1.04rem;color:#fbf8f2;letter-spacing:.04em;line-height:1.5">立教大学大学院LDC 修了</div>
+        <div style="font-size:.72rem;color:rgba(247,244,238,.55);margin-top:8px;letter-spacing:.08em;line-height:1.7">理論で「なぜ効くか」を説明できる<br>アカデミック・プラクティショナー</div>
+      </div>
+      <div class="reveal d2" style="flex:1 1 200px;padding:0 14px;border-left:1px solid rgba(255,255,255,.10)">
+        <div style="font-family:var(--serif);font-size:1.04rem;color:#fbf8f2;letter-spacing:.04em;line-height:1.5">効果量 <b style="color:#e3a484;font-weight:700">d = 1.15</b> を実証</div>
+        <div style="font-size:.72rem;color:rgba(247,244,238,.55);margin-top:8px;letter-spacing:.08em;line-height:1.7">成長支援への自己効力感（大きい効果）<br>立教大学大学院 修士研究</div>
+      </div>
+      <div class="reveal d3" style="flex:1 1 200px;padding:0 14px;border-left:1px solid rgba(255,255,255,.10)">
+        <div style="font-family:var(--serif);font-size:1.04rem;color:#fbf8f2;letter-spacing:.04em;line-height:1.5">理論 × データで設計</div>
+        <div style="font-size:.72rem;color:rgba(247,244,238,.55);margin-top:8px;letter-spacing:.08em;line-height:1.7">「変える」より「気づかせる」を<br>感覚論で終わらせない</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 00.3 PURPOSE（v2新設：目的層） -->
+<section id="purpose" class="cream">
+  <div class="wrap">
+    <div class="eyebrow reveal">Purpose</div>
+    <h2 class="reveal d1">見方を問い直すのは、<br>何かを「<span style="color:var(--accent)">立ち上げる</span>」ため。</h2>
+    <p class="lead reveal d2">マネジメント・リフレクションは、内省して終わりではありません。自分の見方を問い直した先で、マネージャーは——メンバーの力を、やがてチームの新しいものを、立ち上げていく。Oxymoronはこの営み全体を<b style="color:var(--accent)">「創発のマネジメント」</b>と呼びます。</p>
+    <div class="scale-flow reveal d2"><b>自分</b><span class="ar">→</span><b>メンバー</b><span class="ar">→</span><b>チーム</b>　｜　同じ「立ち上がる」が、スケールを変えて広がる</div>
+    <div class="grid three">
+      <div class="card reveal d1"><span class="num">①</span><h3>自分</h3><p>まず、マネージャー自身の見方・前提が立ち上がり直す。すべての起点。リフレクションはここから始まる。</p></div>
+      <div class="card reveal d2"><span class="num">②</span><h3>メンバー</h3><p>1on1で、メンバーの力が立ち上がる。ここは実証済みのゾーン（成長支援への自己効力感 d=1.15 等）。</p></div>
+      <div class="card reveal d3"><span class="num">③</span><h3>チーム</h3><p>やがて、チーム・事業で「まだ無かったもの」が立ち上がる。私たちがめざす地平（未実証）。</p></div>
+    </div>
+    <blockquote class="reveal">守り（内省）を土台に、攻め（立ち上げる）へ。リフレクションは、その推進エンジンです。</blockquote>
+  </div>
+</section>
+
 <!-- 00.5 FOR HR -->
-<section id="for-hr" class="cream">
+<section id="for-hr" class="cream" style="background:var(--cream-2)">
   <div class="wrap">
     <div class="eyebrow reveal">For HR &amp; Leaders</div>
-    <h2 class="reveal d1">こんな課題に、<br>心当たりはありませんか。</h2>
-    <p class="lead reveal d2">制度も研修も、1on1も整えた。それでも——</p>
+    <h2 class="reveal d1">管理職育成に、<br>限界を感じていませんか。</h2>
+    <p class="lead reveal d2">制度も研修も、1on1も整えた。それでも——成果と育成の板挟みは、いっこうに晴れない。</p>
     <div class="symptoms">
       <div class="symptom reveal d1"><span class="ck">✓</span><span>管理職が「罰ゲーム」化し、疲弊や離職の兆しが見える。</span></div>
       <div class="symptom reveal d2"><span class="ck">✓</span><span>1on1を導入したが、面談が「進捗確認」で形骸化している。</span></div>
@@ -312,27 +367,39 @@
   <div class="wrap">
     <div class="eyebrow reveal">Concept</div>
     <h2 class="reveal d1">マネジメントリフレクションとは。</h2>
-    <p class="lead reveal d2">目の前の問題をすぐ解こうとする前に、その問題を見ているマネージャー自身の見方へ、いったん目を向ける営み。Oxymoronはこれを、研修やプログラムの“底”に流れる共通の構えとして据えています。</p>
+    <p class="lead reveal d2">目の前の問題をすぐ解こうとする前に、その問題を見ているマネージャー自身の見方へ、いったん目を向ける営み。<b style="color:var(--accent)">それは過去を振り返ることではなく、まだ見えていなかった見方を新しく立ち上げること——いわば、自分の中で起きる、いちばん小さな創発です。</b>Oxymoronはこれを、研修やプログラムを貫く<b style="color:var(--accent)">核エンジン</b>として据えています。このリフレクションの“対象”は、<b style="color:var(--accent)">自分→メンバー→チーム</b>へと広がっていきます——外へ広げても、同時に自分へ折り返しながら。</p>
     <div class="grid three">
       <div class="card reveal d1"><span class="num">①</span><h3>“見ている自分”を問う</h3><p>「メンバーが育っていない」と感じるとき、原因はそのメンバーだけにあるとは限らない。「どうせできない」「自分でやった方が早い」という、自分の仕事観や認知の癖を映しているのかもしれない。</p></div>
       <div class="card reveal d2"><span class="num">②</span><h3>揺らぎを、なかったことにしない</h3><p>不安なのに強い自分を見せる。迷っているのに正解を持つように振る舞う。揺らぎを封じるほど、反応は硬くなる。「マネージャーも揺らいでいてよい」と思える場から、見つめ直しは始まる。</p></div>
       <div class="card reveal d3"><span class="num">③</span><h3>同士だから、開ける</h3><p>会社も立場も違っても、抱えている矛盾の構造は似ている。同士だからこそ「自分にも似たことがある」と受け取り合え、自分が見ている景色の輪郭が、はっきりしていく。</p></div>
     </div>
     <blockquote class="reveal">出来事を振り返るだけでなく、その出来事を見ていた自分自身の見方を問い直す。そこから、マネジメントは少しずつ更新されていく。</blockquote>
+    <p class="reveal" style="margin-top:24px;font-size:.95rem;line-height:1.95;color:var(--muted)">——なお「揺らいでいい」は、成果から降りることではありません。<b style="color:var(--accent)">成果と育成のあいだに立ち続ける“足腰”をつくる</b>こと。揺らぎを扱えるマネージャーほど、迷いを抱えたまま踏み込めます。</p>
   </div>
 </section>
 
-<!-- 03.5 WAVERING -->
-<section id="wavering" class="dark">
+<!-- 03.7 ARCHITECT OF EMERGENCE（v2新設：リフレクション→創発のロジック） -->
+<section id="architect" class="cream">
   <div class="wrap">
-    <div class="eyebrow reveal">A common concern</div>
-    <h2 class="reveal d1">「揺らいでいい」は、<br>現場を緩めることではない。</h2>
-    <p class="lead reveal d2">「マネージャーが揺らいでいい、答えを出さなくていい——それでは成果責任が緩むのでは?」。よくいただく懸念に、先に答えます。</p>
-    <div class="grid two">
-      <div class="card reveal d1"><h3>揺らぎを“封じる”と</h3><p>不安なのに、強い自分を見せる。迷っているのに、正解を持つように振る舞う。関わりは少しずつ硬くなり、踏み込めず、任せきれなくなる。心理的安全性を掲げても、自分が安心して踏み込めていない。</p></div>
-      <div class="card reveal d2"><h3>揺らぎを“扱える”と</h3><p>メンバーの現実をそのまま受け止められる。必要なときには、迷いを抱えたまま踏み込める。成果と育成、どちらも手放さずに「抱えたまま」立ち続けられる。</p></div>
+    <div class="eyebrow reveal">The architect of emergence</div>
+    <h2 class="reveal d1">マネージャーは、<br>「創発の場」をつくる人になっていく。</h2>
+    <p class="lead reveal d2">創発——チームから、まだ無かったものが立ち上がること——は、命令や管理では起こせません。それは「<b style="color:var(--accent)">場</b>」から生まれる。だからマネージャーの仕事は、答えを出し指示することから、<b style="color:var(--accent)">“場を設計すること”</b>へと移っていきます。</p>
+    <div class="steps">
+      <div class="step reveal d1"><span class="tag">前提</span><h3>創発は「場」から生まれる</h3><p>新しいものは、一人の号令では立ち上がらない。人と人が関わり合う「場」から、自ずと生まれてくる（野中郁次郎の知識創造論）。</p></div>
+      <div class="step reveal d1"><span class="tag">転換</span><h3>「指示する人」から「引き出す人」へ</h3><p>メンバーを“指示で動かす対象”と見ている限り、場は作れない。「この人の中から何かが立ち上がる」と信じ、問いかけ、待ち、引き出す関わりへ。</p></div>
+      <div class="step reveal d1"><span class="tag">根</span><h3>その転換の根が、見方の問い直し</h3><p>関わりを変えるには、まず自分の見方（人間観・前提）が変わる必要がある。それが、マネジメント・リフレクション。</p></div>
     </div>
-    <blockquote class="reveal">揺らぎを認めることは、成果から降りることではない。成果と育成のあいだに立ち続ける“足腰”をつくることです。</blockquote>
+    <blockquote class="reveal">マネジメント・リフレクションは、“場のアーキテクト”へ変わるための、見方の転換です。</blockquote>
+    <p class="reveal" style="margin-top:30px"><b style="color:var(--accent)">1on1は、一人を相手にした、いちばん小さな「場」の設計</b>。そこで起きる「引き出す関わり」は、やがてチームの創発と、地続きにつながっていきます。</p>
+
+    <h3 class="reveal" style="margin-top:56px">チーム規模では、3つの層を設計する。</h3>
+    <p class="reveal d1">場が大きくなるほど、整える対象は増えます。場のアーキテクトは、創発が起きるチームを、3つの層から意図して設計します。</p>
+    <div class="grid three">
+      <div class="card reveal d1"><span class="num">A</span><h3>言い合える土壌<br><small style="font-family:var(--sans);font-size:.7rem;letter-spacing:.16em;color:var(--accent)">態度</small></h3><p>率直な指摘や違和感を、誰もが気兼ねなく出せる状態をつくる。失敗を責めず、挑戦を歓迎する——心理的安全性を、雰囲気ではなく設計として。</p></div>
+      <div class="card reveal d2"><span class="num">B</span><h3>動かす<br><small style="font-family:var(--sans);font-size:.7rem;letter-spacing:.16em;color:var(--accent)">行動</small></h3><p>「なぜやるのか」から握る目標、事実にもとづく相互フィードバック。チームが自分たちで課題を見つけ、動き、修正できる関わりを渡す。</p></div>
+      <div class="card reveal d3"><span class="num">C</span><h3>阿吽の呼吸<br><small style="font-family:var(--sans);font-size:.7rem;letter-spacing:.16em;color:var(--accent)">認知</small></h3><p>チームの「見立て」を揃え、「誰が何を知っているか」を結ぶ。言葉を尽くさずとも噛み合う——新しいものが立ち上がる、創発の土台。</p></div>
+    </div>
+    <p class="note reveal">※ それぞれに学術的な裏づけ（チームワーク研究）と具体的な技術があります。研修では、必要な層から実装します。</p>
   </div>
 </section>
 
@@ -370,12 +437,15 @@
       <div class="node reveal d3"><span class="s">④ 1on1の質が変わる</span><small>検証中</small></div>
       <div class="arrow reveal d3">→</div>
       <div class="node reveal d4"><span class="s">⑤ メンバーの成長・成果</span><small>めざす先</small></div>
+      <div class="arrow reveal d4">→</div>
+      <div class="node horizon reveal d4"><span class="s">⑥ チームの創発</span><small>未実証 / めざす地平</small></div>
     </div>
     <div class="chain-legend reveal">
       <span><i class="p"></i>今回の研究で実証できたところ</span>
-      <span><i class="a"></i>そこから先の、狙うアウトカム（現在も検証中）</span>
+      <span><i class="a"></i>そこから先の、狙うアウトカム（検証中）</span>
+      <span><i class="h"></i>研究の射程の外。データはまだ無い“めざす地平”</span>
     </div>
-    <p class="reveal" style="margin-top:24px">ABCモデル（態度→行動→結果）の考え方に沿えば、<b style="color:var(--accent)">最初に動かすべきは①②のマネージャーの内面</b>。今回の研究は、その入口が確かに動くことを示しました。③以降は、その先に続く狙いです。</p>
+    <p class="reveal" style="margin-top:24px">ABCモデル（態度→行動→結果）の考え方に沿えば、<b style="color:var(--accent)">最初に動かすべきは①②のマネージャーの内面</b>。今回の研究は、その入口が確かに動くことを示しました。③以降は、その先に続く狙い。さらにその先に、チームで新しいものが立ち上がる<b style="color:var(--accent)">創発（⑥）</b>を見据えています——ここはまだデータの外の“めざす地平”として、正直に置いています。</p>
 
     <h3 class="reveal" style="margin-top:60px">今回、確かに動いたもの（マネージャー側）</h3>
     <div class="metric-grid">
@@ -402,7 +472,7 @@
         <p class="voice-cap">※ 焦点だった行動の“数値”はメンバー知覚では大きく動かなかった。それでも、関わりの質の変化は、こうした声に表れている。</p>
       </div>
     </div>
-    <p class="reveal" style="margin-top:30px">変化は、まずマネージャーの内面から始まり、関わりへと染み出していく——その途中を、このデータと声は捉えています。</p>
+    <p class="reveal" style="margin-top:30px">変化は、まずマネージャーの内面から始まり、関わりへと染み出していく。そして関わりが変わると、<b style="color:var(--accent)">メンバーの中から「自分で考える」動きが立ち上がり始める</b>——創発の、最初の芽です。その途中を、このデータと声は捉えています。</p>
     <p class="note reveal">※ N=15（マネージャー）・対照群なしの探索的研究のため、効果量は過大に出やすく、因果を断定するものではありません。数値は3日間＋実践期間の介入研究の結果で、半日〜1dayのWSはその入口・体験版です。私たちは、この限界を承知の上で、研究を重ねながら提供を磨いています。</p>
   </div>
 </section>
@@ -449,7 +519,7 @@
       <div class="step reveal d1"><span class="tag">STEP 1</span><h3>マネジメントリフレクション（半日〜1day WS）</h3><p>まず体験する。信念の可視化・同士のシェア・次の一手の言語化。単体でも完結するリフレクション体験。</p></div>
       <div class="step reveal d1"><span class="tag">STEP 2</span><h3>マネージャー同士のリフレクションの場（継続）</h3><p>同じ適応課題に向き合う管理職が集い、定期的に内省し合う。一人で抱え込まない。</p></div>
       <div class="step reveal d1"><span class="tag">STEP 3</span><h3>1on1成長支援プログラム（3day＋実践期間）</h3><p>実証済みの本格版。意識・自信・行動の3層に複合介入する（d=0.88〜1.24）。</p></div>
-      <div class="step reveal d1"><span class="tag">STEP 4</span><h3>チーム／組織へ</h3><p>関係性と対話の質を変え、組織が自分で「場」を回せる状態まで伴走する。</p></div>
+      <div class="step reveal d1"><span class="tag">STEP 4</span><h3>チーム／組織の創発へ</h3><p>関係性と対話の質を変え、組織が自分で「場」を回し、新しいものを立ち上げられる状態まで伴走する。</p></div>
     </div>
     <blockquote class="reveal">まずは「マネジメントリフレクション」を、貴社のマネージャーと。</blockquote>
     <a href="https://sho2437.github.io/oxymoron-web/" class="cta reveal">お問い合わせ・資料請求 →</a>
